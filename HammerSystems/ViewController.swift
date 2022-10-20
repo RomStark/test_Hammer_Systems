@@ -7,12 +7,21 @@
 
 import UIKit
 
+
+
 class ViewController: UIViewController {
-    
+    private var lastViewSize: CGSize?
     var presenter:  MainViewPresenterProtocol!
     var tableView = UITableView()
     var actionCollectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
     var dataSourcePhoto = [UIImage(named: "SecondPhoto"), UIImage(named: "SecondPhoto"), UIImage(named: "SecondPhoto")]
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+//        onViewSizeChange {
+//            updateHeaderViewSize()
+//        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,7 +29,16 @@ class ViewController: UIViewController {
         setupTableView()
         setupActionCollectionView()
         
+        
     }
+    
+    private func configureTableViewFooter() {
+            // Grouped style table view has bottom padding by default.
+            // tableFooterView setting is the only option to change it's height.
+            let footerView = UIView()
+            footerView.frame.size.height = .leastNonzeroMagnitude
+            tableView.tableFooterView = footerView
+        }
     
     func setupActionCollectionView() {
         actionCollectionView.register(ActionCollectionViewCell.self, forCellWithReuseIdentifier: ActionCollectionViewCell.reuseIdentifier)
@@ -29,10 +47,10 @@ class ViewController: UIViewController {
         actionCollectionView.keyboardDismissMode = .onDrag
         actionCollectionView.delegate = self
         actionCollectionView.dataSource = self
-        actionCollectionView.pinTop(to: self.view, 76)
-        actionCollectionView.pinBottom(to: tableView.topAnchor, 80)
-        actionCollectionView.pinLeft(to: self.view, 0)
-        actionCollectionView.pinRight(to: self.view, 0)
+//        actionCollectionView.pinTop(to: self.view, 0)
+//        actionCollectionView.pinBottom(to: tableView.topAnchor, 10)
+//        actionCollectionView.pinLeft(to: self.view, 0)
+//        actionCollectionView.pinRight(to: self.view, 0)
         let layot = UICollectionViewFlowLayout()
         layot.scrollDirection = .horizontal
         self.actionCollectionView.collectionViewLayout = layot
@@ -42,15 +60,36 @@ class ViewController: UIViewController {
     func setupTableView() {
         tableView.register(FoodTableViewCell.self, forCellReuseIdentifier: FoodTableViewCell.reuseIdentifier)
         view.addSubview(tableView)
+        
+        tableView.tableHeaderView = actionCollectionView
         tableView.layer.cornerRadius = 20
         tableView.backgroundColor = .clear
         tableView.keyboardDismissMode = .onDrag
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.pin(to: self.view, [.left: 0, .top: 268, .right:0, .bottom:0])
+        tableView.pin(to: self.view, [.left: 0, .top: 0, .right:0, .bottom:0])
+        configureTableViewFooter()
     }
+    
+    private func onViewSizeChange(action: () -> Void) {
+            guard lastViewSize != view.bounds.size else {
+                return
+            }
 
+            lastViewSize = view.bounds.size
+            action()
+        }
+    
+    private func updateHeaderViewSize() {
+            guard tableView.bounds.size != .zero else {
+                return
+            }
 
+        actionCollectionView.frame.size = actionCollectionView.systemLayoutSizeFitting(CGSize(width: tableView.bounds.width, height: 0),
+                                                                       withHorizontalFittingPriority: .required,
+                                                                       verticalFittingPriority: .defaultLow)
+            tableView.tableHeaderView = actionCollectionView // Corrects table view layout after header's size change
+        }
 }
 
 extension ViewController: MainViewProtocol {
@@ -81,6 +120,9 @@ extension ViewController: UITableViewDataSource{
         cell?.configure(food: food)
         return cell ?? UITableViewCell()
     }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+                return actionCollectionView
+            }
     
 }
 
@@ -104,7 +146,7 @@ extension ViewController: UICollectionViewDataSource {
 
 extension ViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 300, height: 182)
+        return CGSize(width: 300, height: 332)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {

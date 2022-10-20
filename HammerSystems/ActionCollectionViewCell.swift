@@ -31,7 +31,7 @@ class ActionCollectionViewCell: UICollectionViewCell {
     }
     func setupView() {
         photo.setWidth(to: 300)
-        photo.setHeight(to: 182)
+        photo.setHeight(to: 222)
         photo.contentMode = .scaleAspectFit
         photo.clipsToBounds = true
         contentView.addSubview(photo)
